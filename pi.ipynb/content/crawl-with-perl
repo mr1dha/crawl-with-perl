@@ -1,0 +1,166 @@
+{
+  "nbformat": 4,
+  "nbformat_minor": 0,
+  "metadata": {
+    "colab": {
+      "name": "pi.ipynb",
+      "provenance": [],
+      "collapsed_sections": [],
+      "include_colab_link": true
+    },
+    "kernelspec": {
+      "name": "python3",
+      "display_name": "Python 3"
+    },
+    "accelerator": "TPU"
+  },
+  "cells": [
+    {
+      "cell_type": "markdown",
+      "metadata": {
+        "id": "view-in-github",
+        "colab_type": "text"
+      },
+      "source": [
+        "<a href=\"https://colab.research.google.com/github/mr1dha/crawl-with-perl/blob/master/pi.ipynb/content/crawl-with-perl\" target=\"_parent\"><img src=\"https://colab.research.google.com/assets/colab-badge.svg\" alt=\"Open In Colab\"/></a>"
+      ]
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "mHJFjGFT5JRd"
+      },
+      "source": [
+        "!git remote add origin https://github.com/mr1dha/crawl-with-perl.git"
+      ],
+      "execution_count": 86,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "rzLA1RVQTMUj"
+      },
+      "source": [
+        "!git config --global user.name mr1dha"
+      ],
+      "execution_count": 106,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "Q2n2nzgSEwR_"
+      },
+      "source": [
+        "!rm /content/crawl-with-perl/scrap/liputan6-0.txt"
+      ],
+      "execution_count": 83,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "7I3Ql4qGG2L3"
+      },
+      "source": [
+        "!mkdir /content/crawl-with-perl/scrap"
+      ],
+      "execution_count": 62,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "XNUYCm_0Fbql"
+      },
+      "source": [
+        "import os\n",
+        "import codecs;\n",
+        "from bs4 import BeautifulSoup\n",
+        "\n",
+        "#mengambil isi directori\n",
+        "files = os.listdir('/content/crawl-with-perl/liputan6')\n",
+        "\n",
+        "#function mencetak file ke dalam plain text\n",
+        "def print_into_file(url, title, content, ctr):\n",
+        "  #menghitung jumlah pembagian kontent : top middle bottom\n",
+        "\n",
+        "  section = {\n",
+        "      \"top\" : round(len(content) * 0.2),\n",
+        "      \"middle\" : round(len(content) * 0.4),\n",
+        "      \"bottom\" : round(len(content) * 0.4) }\n",
+        "  \n",
+        "  #merancang format write konten\n",
+        "  top = \"<top>\" + \"\".join(content[:section[\"top\"]])+\"</top>\"\n",
+        "  middle = \"<middle>\"+ \"\".join(content[section[\"top\"]:section[\"middle\"]])+\"</middle>\"\n",
+        "  bottom = \"<bottom>\" + \"\".join(content[section[\"bottom\"]:])+\"</bottom>\"\n",
+        "\n",
+        "  #write artikel ke file\n",
+        "  f = open('/content/crawl-with-perl/scrap/liputan6-'+ str(ctr)+'.ridha', 'w' )\n",
+        "  f.write(  str(url) + '\\n\\n')\n",
+        "  f.write(  str(title) + '\\n\\n')\n",
+        "  f.write(  str(top) + '\\n\\n')\n",
+        "  f.write(  str(middle) + '\\n\\n')\n",
+        "  f.write(  str(bottom) + '\\n\\n')\n",
+        "\n",
+        "\n",
+        "  f.close()\n",
+        "\n",
+        "\n",
+        "#function crawling file\n",
+        "def crawl_file(file, ctr) :\n",
+        "  #membuka file\n",
+        "  html = codecs.open('/content/crawl-with-perl/liputan6/'+file, 'r')\n",
+        "\n",
+        "  #memulai parsing\n",
+        "  soup = BeautifulSoup(html, 'html.parser')\n",
+        "\n",
+        "  #mengambil judul artikel (beserta tag)\n",
+        "  title = soup.find('title')\n",
+        "\n",
+        "  #mengambil URL (beserta tag)\n",
+        "  url = '<url>'+ soup.find(\"meta\",  property=\"og:url\").get('content') + '</url>'\n",
+        "\n",
+        "  #mengahpus tag <b>\n",
+        "  for b in soup.select('div.article-content-body__item-content b'):\n",
+        "    b.decompose()\n",
+        "\n",
+        "  #mengambil konten berita\n",
+        "  contents = soup.select('div.article-content-body__item-content p')\n",
+        "  content_final = []\n",
+        "\n",
+        "  for content in contents :\n",
+        "    try : content_final.append(content.get_text())\n",
+        "    except : continue\n",
+        "\n",
+        "  if len(content_final) > 0 :\n",
+        "    print_into_file(url, title, content_final, ctr)\n",
+        "  \n",
+        "ctr = 0;\n",
+        "#crawl_file(files[0], ctr)\n",
+        "\n",
+        "#looping semua file untuk crawling\n",
+        "for file in files :\n",
+        "\n",
+        "  #mengeleminasi artikel video\n",
+        "  if \"video\" not in file:\n",
+        "    crawl_file(file, ctr)\n",
+        "    ctr += 1\n"
+      ],
+      "execution_count": 80,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "metadata": {
+        "id": "gPpyFurawHr-"
+      },
+      "source": [
+        ""
+      ],
+      "execution_count": null,
+      "outputs": []
+    }
+  ]
+}
